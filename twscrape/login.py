@@ -1,3 +1,5 @@
+import asyncio
+import cloudscraper
 import imaplib
 from dataclasses import dataclass
 from datetime import timedelta
@@ -29,9 +31,19 @@ class TaskCtx:
     imap: None | imaplib.IMAP4_SSL
 
 
+async def post_cloudscraper(url: str, **kwargs):
+    """Apufunktio, joka ajaa synkronisen cloudscraper POST-pyynnön asynkronisesti."""
+    def sync_request():
+        scraper = cloudscraper.create_scraper()
+        rep = scraper.post(url, **kwargs)
+        rep.raise_for_status()
+        return rep
+
+    return await asyncio.to_thread(sync_request)
+
+
 async def get_guest_token(client: AsyncClient):
-    rep = await client.post("https://api.x.com/1.1/guest/activate.json")
-    rep.raise_for_status()
+    rep = await post_cloudscraper("https://api.x.com/1.1/guest/activate.json")
     return rep.json()["guest_token"]
 
 
@@ -43,8 +55,7 @@ async def login_initiate(client: AsyncClient) -> Response:
         "subtask_versions": {},
     }
 
-    rep = await client.post(LOGIN_URL, params={"flow_name": "login"}, json=payload)
-    rep.raise_for_status()
+    rep = await post_cloudscraper(LOGIN_URL, params={"flow_name": "login"}, json=payload)
     return rep
 
 
@@ -59,8 +70,7 @@ async def login_alternate_identifier(ctx: TaskCtx, *, username: str) -> Response
         ],
     }
 
-    rep = await ctx.client.post(LOGIN_URL, json=payload)
-    rep.raise_for_status()
+    rep = await post_cloudscraper(LOGIN_URL, json=payload)
     return rep
 
 
@@ -75,8 +85,7 @@ async def login_instrumentation(ctx: TaskCtx) -> Response:
         ],
     }
 
-    rep = await ctx.client.post(LOGIN_URL, json=payload)
-    rep.raise_for_status()
+    rep = await post_cloudscraper(LOGIN_URL, json=payload)
     return rep
 
 
@@ -99,8 +108,7 @@ async def login_enter_username(ctx: TaskCtx) -> Response:
         ],
     }
 
-    rep = await ctx.client.post(LOGIN_URL, json=payload)
-    rep.raise_for_status()
+    rep = await post_cloudscraper(LOGIN_URL, json=payload)
     return rep
 
 
@@ -115,8 +123,7 @@ async def login_enter_password(ctx: TaskCtx) -> Response:
         ],
     }
 
-    rep = await ctx.client.post(LOGIN_URL, json=payload)
-    rep.raise_for_status()
+    rep = await post_cloudscraper(LOGIN_URL, json=payload)
     return rep
 
 
@@ -135,8 +142,7 @@ async def login_two_factor_auth_challenge(ctx: TaskCtx) -> Response:
         ],
     }
 
-    rep = await ctx.client.post(LOGIN_URL, json=payload)
-    rep.raise_for_status()
+    rep = await post_cloudscraper(LOGIN_URL, json=payload)
     return rep
 
 
@@ -151,8 +157,7 @@ async def login_duplication_check(ctx: TaskCtx) -> Response:
         ],
     }
 
-    rep = await ctx.client.post(LOGIN_URL, json=payload)
-    rep.raise_for_status()
+    rep = await post_cloudscraper(LOGIN_URL, json=payload)
     return rep
 
 
@@ -167,8 +172,7 @@ async def login_confirm_email(ctx: TaskCtx) -> Response:
         ],
     }
 
-    rep = await ctx.client.post(LOGIN_URL, json=payload)
-    rep.raise_for_status()
+    rep = await post_cloudscraper(LOGIN_URL, json=payload)
     return rep
 
 
@@ -194,8 +198,7 @@ async def login_confirm_email_code(ctx: TaskCtx):
         ],
     }
 
-    rep = await ctx.client.post(LOGIN_URL, json=payload)
-    rep.raise_for_status()
+    rep = await post_cloudscraper(LOGIN_URL, json=payload)
     return rep
 
 
@@ -205,8 +208,7 @@ async def login_success(ctx: TaskCtx) -> Response:
         "subtask_inputs": [],
     }
 
-    rep = await ctx.client.post(LOGIN_URL, json=payload)
-    rep.raise_for_status()
+    rep = await post_cloudscraper(LOGIN_URL, json=payload)
     return rep
 
 
