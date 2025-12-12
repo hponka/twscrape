@@ -12,6 +12,7 @@ from .account import Account
 from .imap import imap_get_email_code, imap_login
 from .logger import logger
 from .utils import utc
+from fake_useragent import UserAgent
 
 LOGIN_URL = "https://api.x.com/1.1/onboarding/task.json"
 
@@ -35,6 +36,7 @@ async def post_cloudscraper(url: str, **kwargs):
     """A helper function that runs a synchronous cloudscraper POST request asynchronously."""
     def sync_request():
         scraper = cloudscraper.create_scraper()
+        scraper.headers.update({"User-Agent": UserAgent().chrome})
         rep = scraper.post(url, **kwargs)
         rep.raise_for_status()
         return rep
