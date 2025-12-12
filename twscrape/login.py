@@ -32,7 +32,7 @@ class TaskCtx:
 
 
 async def post_cloudscraper(url: str, **kwargs):
-    """Apufunktio, joka ajaa synkronisen cloudscraper POST-pyynnön asynkronisesti."""
+    """A helper function that runs a synchronous cloudscraper POST request asynchronously."""
     def sync_request():
         scraper = cloudscraper.create_scraper()
         rep = scraper.post(url, **kwargs)
